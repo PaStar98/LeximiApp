@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Leximi.Api/Leximi.Api.csproj" />
+    <Project Path="src/Leximi.Application/Leximi.Application.csproj" />
+    <Project Path="src/Leximi.Domain/Leximi.Domain.csproj" />
+    <Project Path="src/Leximi.Infrastructure/Leximi.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Leximi.Application.UnitTests/Leximi.Application.UnitTests.csproj" />
+    <Project Path="tests/Leximi.Domain.UnitTests/Leximi.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>
