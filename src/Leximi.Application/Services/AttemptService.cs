@@ -67,9 +67,16 @@ public class AttemptService : IAttemptService
         return new AttemptDto(attempt.Id, attempt.LearningSetId, attempt.StartedAt, attempt.FinishedAt, attempt.Score);
     }
 
-    public async Task<IEnumerable<AttemptDto>> GetUserHistoryAsync(Guid userId)
+    public async Task<AttemptDto> GetAttemptByIdAsync(Guid attemptId)
+    {
+        var attempt = await _attemptRepository.GetByIdAsync(attemptId);
+        if (attempt == null) throw new Exception("Attempt not found");
+        return new AttemptDto(attempt.Id, attempt.LearningSetId, attempt.StartedAt, attempt.FinishedAt, attempt.Score);
+    }
+
+    public async Task<IEnumerable<AttemptHistoryDto>> GetUserHistoryAsync(Guid userId)
     {
         var attempts = await _attemptRepository.GetByUserIdAsync(userId);
-        return attempts.Select(a => new AttemptDto(a.Id, a.LearningSetId, a.StartedAt, a.FinishedAt, a.Score));
+        return attempts.Select(a => new AttemptHistoryDto(a.Id, a.LearningSetId, a.LearningSet.Title, a.StartedAt, a.FinishedAt, a.Score));
     }
 }

@@ -38,11 +38,22 @@ public class LearningSetService : ILearningSetService
         _repository = repository;
     }
 
-    public async Task<LearningSetDto> GetSetByIdAsync(Guid id)
+    public async Task<LearningSetDetailsDto> GetSetByIdAsync(Guid id)
     {
-        var set = await _repository.GetByIdAsync(id);
+        var set = await _repository.GetWithItemsAsync(id);
         if (set == null) throw new Exception("Set not found");
-        return new LearningSetDto(set.Id, set.Title, set.Description, set.Type.ToString());
+
+        var items = set.Items.Select(i => new LearningItemDto(
+            i.Id,
+            i.Question != null ? new QuestionDto(
+                i.Question.Id, 
+                i.Question.Content, 
+                i.Question.Answers.Select(a => new AnswerDto(a.Id, a.Content, a.IsCorrect)).ToList()
+            ) : null,
+            i.Flashcard != null ? new FlashcardDto(i.Flashcard.Front, i.Flashcard.Back) : null
+        )).ToList();
+
+        return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.Type.ToString(), items);
     }
 
     public async Task<IEnumerable<LearningSetDto>> GetSetsByCategoryAsync(Guid categoryId)

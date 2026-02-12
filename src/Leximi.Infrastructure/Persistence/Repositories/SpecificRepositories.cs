@@ -42,6 +42,7 @@ public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptReposit
     public async Task<IEnumerable<LearningSetAttempt>> GetByUserIdAsync(Guid userId)
     {
         return await _dbSet
+            .Include(a => a.LearningSet)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.StartedAt)
             .ToListAsync();

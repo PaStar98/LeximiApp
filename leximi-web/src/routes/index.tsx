@@ -3,6 +3,10 @@ import MainLayout from '../layouts/MainLayout';
 import LoginPage from '../features/auth/LoginPage';
 import RegisterPage from '../features/auth/RegisterPage';
 import CatalogPage from '../features/catalog/CatalogPage';
+import CategorySetsPage from '../features/catalog/CategorySetsPage';
+import SetDetailsPage from '../features/sets/SetDetailsPage';
+import LearningPage from '../features/learning/LearningPage';
+import ProfilePage from '../features/profile/ProfilePage';
 import { useAuth } from '../providers/AuthProvider';
 
 const AppRoutes = () => {
@@ -17,8 +21,12 @@ const AppRoutes = () => {
 
                 {/* Protected Routes */}
                 <Route path="/catalog" element={<CatalogPage />} />
-                <Route path="/profile" element={isAuthenticated ? <div>Profil Użytkownika</div> : <Navigate to="/login" />} />
-                <Route path="/sets/create" element={isAuthenticated ? <div>Tworzenie Zestawu</div> : <Navigate to="/login" />} />
+                <Route path="/catalog/:categoryId" element={isAuthenticated ? <CategorySetsPage /> : <Navigate to="/login" />} />
+                <Route path="/sets/:id" element={isAuthenticated ? <SetDetailsPage /> : <Navigate to="/login" />} />
+                <Route path="/learning/:attemptId" element={isAuthenticated ? <LearningPage /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
+
+                <Route path="/sets/create" element={isAuthenticated ? <div>Tworzenie Zestawu (TODO)</div> : <Navigate to="/login" />} />
             </Route>
         </Routes>
     );

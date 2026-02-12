@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { catalogApi } from './api';
+import { categoryService } from '../../api/services';
 import { Link } from 'react-router-dom';
 
 const CatalogPage = () => {
     const { data: categories, isLoading, error } = useQuery({
         queryKey: ['categories'],
-        queryFn: catalogApi.getCategories,
+        queryFn: categoryService.getAll,
     });
 
     if (isLoading) return <div>Ładowanie kategorii...</div>;

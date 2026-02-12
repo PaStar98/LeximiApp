@@ -13,6 +13,12 @@ public static class AttemptEndpoints
     {
         var group = app.MapGroup("/api/attempts").RequireAuthorization();
 
+        group.MapGet("/{id}", async (Guid id, IAttemptService service) =>
+        {
+            var attempt = await service.GetAttemptByIdAsync(id);
+            return Results.Ok(attempt);
+        });
+
         group.MapPost("/start/{setId}", async (Guid setId, ClaimsPrincipal user, IAttemptService service) =>
         {
             var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);

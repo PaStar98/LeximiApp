@@ -7,7 +7,7 @@ export default defineConfig({
         port: 3000,
         proxy: {
             '/api': {
-                target: 'https://localhost:7141', // Matches Leximi.Api launchSettings.json
+                target: 'https://localhost:5001', // Matches Leximi.Api launchSettings.json
                 changeOrigin: true,
                 secure: false,
             },

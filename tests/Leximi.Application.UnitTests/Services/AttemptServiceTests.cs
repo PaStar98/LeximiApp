@@ -26,7 +26,7 @@ public class AttemptServiceTests
         // Arrange
         var setId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var learningSet = new LearningSet { Id = setId, Title = "Test Set" };
+        var learningSet = new LearningSet { Id = setId, Title = "Test Set", Type = Domain.Enums.SetType.Flashcards };
 
         _setRepositoryMock.Setup(r => r.GetByIdAsync(setId))
             .ReturnsAsync(learningSet);
@@ -36,7 +36,7 @@ public class AttemptServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.LearningSetId.Should().Be(setId);
+        result.SetId.Should().Be(setId);
         _attemptRepositoryMock.Verify(r => r.AddAsync(It.IsAny<LearningSetAttempt>()), Times.Once);
         _attemptRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }

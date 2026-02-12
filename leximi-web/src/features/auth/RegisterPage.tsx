@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { authApi } from './api';
+import { authService } from '../../api/services';
 import { useAuth } from '../../providers/AuthProvider';
 
 const registerSchema = z.object({
@@ -27,7 +27,7 @@ const RegisterPage = () => {
     });
 
     const mutation = useMutation({
-        mutationFn: authApi.register,
+        mutationFn: authService.register,
         onSuccess: (data) => {
             setAuth(data.token, { id: '', username: data.username, email: data.email });
             navigate('/');
@@ -35,7 +35,8 @@ const RegisterPage = () => {
     });
 
     const onSubmit = (data: RegisterForm) => {
-        mutation.mutate(data);
+        const { confirmPassword, ...requestData } = data;
+        mutation.mutate(requestData);
     };
 
     return (

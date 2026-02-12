@@ -3,33 +3,32 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { authApi } from './api';
+import { authService } from '../../api/services';
 import { useAuth } from '../../providers/AuthProvider';
+import { LoginRequestDto } from '../../types';
 
 const loginSchema = z.object({
     email: z.string().email('Niepoprawny format email'),
     password: z.string().min(6, 'Hasło musi mieć co najmniej 6 znaków'),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
-
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login: setAuth } = useAuth();
 
-    const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
+    const { register, handleSubmit, formState: { errors } } = useForm<LoginRequestDto>({
         resolver: zodResolver(loginSchema),
     });
 
     const mutation = useMutation({
-        mutationFn: authApi.login,
+        mutationFn: authService.login,
         onSuccess: (data) => {
             setAuth(data.token, { id: '', username: data.username, email: data.email });
             navigate('/');
         },
     });
 
-    const onSubmit = (data: LoginForm) => {
+    const onSubmit = (data: LoginRequestDto) => {
         mutation.mutate(data);
     };
 

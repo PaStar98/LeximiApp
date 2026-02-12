@@ -12,7 +12,8 @@ public class LearningSetTests
         // Arrange & Act
         var learningSet = new LearningSet
         {
-            Title = "Test Set"
+            Title = "Test Set",
+            Type = Domain.Enums.SetType.Flashcards
         };
 
         // Assert
@@ -28,7 +29,8 @@ public class LearningSetTests
         var learningSet = new LearningSet
         {
             Id = setId,
-            Title = "Math Basics"
+            Title = "Math Basics",
+            Type = Domain.Enums.SetType.Flashcards
         };
 
         var item = new LearningItem
