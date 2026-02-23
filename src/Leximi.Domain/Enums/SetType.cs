@@ -4,5 +4,6 @@ public enum SetType
 {
     Exam,
     Test,
+    Quiz,
     Flashcards
 }

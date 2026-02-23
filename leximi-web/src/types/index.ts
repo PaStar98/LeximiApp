@@ -36,6 +36,7 @@ export interface LearningSetDto {
     id: string;
     title: string;
     description?: string;
+    categoryId: string;
     type: string;
 }
 
@@ -71,6 +72,21 @@ export interface LearningItemDto {
 
 export interface LearningSetDetailsDto extends LearningSetDto {
     items: LearningItemDto[];
+}
+
+export interface UpdateLearningItemDto {
+    id?: string;
+    questionContent?: string | null;
+    answers?: AnswerDto[] | null;
+    flashcardFront?: string | null;
+    flashcardBack?: string | null;
+}
+
+export interface UpdateLearningSetDto {
+    title: string;
+    description?: string | null;
+    type: string;
+    items: UpdateLearningItemDto[];
 }
 
 export interface AttemptDto {

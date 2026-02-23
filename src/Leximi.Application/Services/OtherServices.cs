@@ -53,14 +53,14 @@ public class LearningSetService : ILearningSetService
             i.Flashcard != null ? new FlashcardDto(i.Flashcard.Front, i.Flashcard.Back) : null
         )).ToList();
 
-        return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.Type.ToString(), items);
+        return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), items);
     }
 
     public async Task<IEnumerable<LearningSetDto>> GetSetsByCategoryAsync(Guid categoryId)
     {
         var sets = await _repository.GetAllAsync();
         return sets.Where(s => s.CategoryId == categoryId)
-                   .Select(s => new LearningSetDto(s.Id, s.Title, s.Description, s.Type.ToString()));
+                   .Select(s => new LearningSetDto(s.Id, s.Title, s.Description, s.CategoryId, s.Type.ToString()));
     }
 
     public async Task<LearningSetDto> CreateSetAsync(CreateLearningSetDto request, Guid userId)
@@ -79,6 +79,96 @@ public class LearningSetService : ILearningSetService
 
         await _repository.AddAsync(set);
         await _repository.SaveChangesAsync();
-        return new LearningSetDto(set.Id, set.Title, set.Description, set.Type.ToString());
+        return new LearningSetDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString());
+    }
+
+    public async Task<LearningSetDetailsDto> UpdateSetAsync(Guid id, UpdateLearningSetDto request, Guid userId)
+    {
+        var set = await _repository.GetWithItemsAsync(id);
+        if (set == null) throw new Exception("Set not found");
+        if (set.OwnerId != userId) throw new Exception("Unauthorized");
+
+        set.Title = request.Title;
+        set.Description = request.Description;
+        
+        // Synchronize Items
+        var requestItems = request.Items ?? new List<UpdateLearningItemDto>();
+        
+        // 1. Remove items not in request
+        var itemsToRemove = set.Items.Where(i => !requestItems.Any(ri => ri.Id == i.Id)).ToList();
+        foreach (var item in itemsToRemove)
+        {
+            set.Items.Remove(item);
+        }
+
+        // 2. Add or Update items
+        foreach (var itemDto in requestItems)
+        {
+            var existingItem = itemDto.Id.HasValue ? set.Items.FirstOrDefault(i => i.Id == itemDto.Id.Value) : null;
+
+            if (existingItem != null)
+            {
+                // Update
+                if (set.Type == Leximi.Domain.Enums.SetType.Quiz && itemDto.QuestionContent != null)
+                {
+                    if (existingItem.Question == null) existingItem.Question = new Question { Content = itemDto.QuestionContent };
+                    existingItem.Question.Content = itemDto.QuestionContent;
+                    
+                    // Sync Answers
+                    if (itemDto.Answers != null)
+                    {
+                        var answersToRemove = existingItem.Question.Answers.Where(a => !itemDto.Answers.Any(ra => ra.Id == a.Id)).ToList();
+                        foreach(var a in answersToRemove) existingItem.Question.Answers.Remove(a);
+
+                        foreach(var answerDto in itemDto.Answers)
+                        {
+                            var existingAnswer = existingItem.Question.Answers.FirstOrDefault(a => a.Id == answerDto.Id);
+                            if (existingAnswer != null)
+                            {
+                                existingAnswer.Content = answerDto.Content;
+                                existingAnswer.IsCorrect = answerDto.IsCorrect;
+                            }
+                            else
+                            {
+                                existingItem.Question.Answers.Add(new Answer { Content = answerDto.Content, IsCorrect = answerDto.IsCorrect });
+                            }
+                        }
+                    }
+                }
+                else if (set.Type == Leximi.Domain.Enums.SetType.Flashcards && itemDto.FlashcardFront != null)
+                {
+                    if (existingItem.Flashcard == null) 
+                        existingItem.Flashcard = new Flashcard { Front = itemDto.FlashcardFront, Back = itemDto.FlashcardBack ?? "" };
+                    
+                    existingItem.Flashcard.Front = itemDto.FlashcardFront;
+                    existingItem.Flashcard.Back = itemDto.FlashcardBack ?? "";
+                }
+            }
+            else
+            {
+                // Add New
+                var newItem = new LearningItem { LearningSetId = set.Id };
+                if (set.Type == Leximi.Domain.Enums.SetType.Quiz)
+                {
+                    newItem.Question = new Question 
+                    { 
+                        Content = itemDto.QuestionContent ?? "",
+                        Answers = itemDto.Answers?.Select(a => new Answer { Content = a.Content, IsCorrect = a.IsCorrect }).ToList() ?? new List<Answer>()
+                    };
+                }
+                else
+                {
+                    newItem.Flashcard = new Flashcard
+                    {
+                        Front = itemDto.FlashcardFront ?? "",
+                        Back = itemDto.FlashcardBack ?? ""
+                    };
+                }
+                set.Items.Add(newItem);
+            }
+        }
+
+        await _repository.SaveChangesAsync();
+        return await GetSetByIdAsync(id);
     }
 }

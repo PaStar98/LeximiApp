@@ -20,6 +20,7 @@ public interface ILearningSetService
     Task<LearningSetDetailsDto> GetSetByIdAsync(Guid id);
     Task<IEnumerable<LearningSetDto>> GetSetsByCategoryAsync(Guid categoryId);
     Task<LearningSetDto> CreateSetAsync(CreateLearningSetDto request, Guid userId);
+    Task<LearningSetDetailsDto> UpdateSetAsync(Guid id, UpdateLearningSetDto request, Guid userId);
 }
 
 public interface IAttemptService

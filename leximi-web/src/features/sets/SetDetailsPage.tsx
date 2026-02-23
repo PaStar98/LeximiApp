@@ -28,14 +28,22 @@ const SetDetailsPage = () => {
         }
     };
 
+    const handleEdit = () => {
+        navigate(`/sets/${id}/edit`);
+    };
+
     if (isLoading) return <div>Ładowanie zestawu...</div>;
     if (error) return <div>Wystąpił błąd podczas pobierania zestawu.</div>;
     if (!set) return <div>Zestaw nie znaleziony.</div>;
 
     return (
         <div className="set-details-container">
-            <h1>{set.title}</h1>
-            <p className="description">{set.description}</p>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-3xl font-bold">{set.title}</h1>
+                {/* TODO: Check ownership */}
+                <button onClick={handleEdit} className="btn-secondary">Edytuj</button>
+            </div>
+            <p className="description mb-4">{set.description}</p>
             <div className="set-info">
                 <span>Typ: {set.type}</span>
                 <span>Liczba elementów: {set.items.length}</span>

@@ -2,7 +2,7 @@ import apiClient from './client';
 import {
     LoginRequestDto, RegisterRequestDto, AuthResponseDto, UserDto,
     CategoryDto, CreateCategoryDto,
-    LearningSetDto, LearningSetDetailsDto, CreateLearningSetDto,
+    LearningSetDto, LearningSetDetailsDto, CreateLearningSetDto, UpdateLearningSetDto,
     AttemptDto, SubmitAnswerDto, AttemptHistoryDto
 } from '../types';
 
@@ -44,7 +44,11 @@ export const learningSetService = {
     create: async (data: CreateLearningSetDto): Promise<LearningSetDto> => {
         const response = await apiClient.post<LearningSetDto>('/sets', data);
         return response.data;
-    }
+    },
+    update: async (id: string, data: UpdateLearningSetDto): Promise<LearningSetDetailsDto> => {
+        const response = await apiClient.put<LearningSetDetailsDto>(`/sets/${id}`, data);
+        return response.data;
+    },
 };
 
 export const attemptService = {

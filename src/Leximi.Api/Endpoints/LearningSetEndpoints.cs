@@ -31,5 +31,12 @@ public static class LearningSetEndpoints
             var set = await service.CreateSetAsync(request, userId);
             return Results.Ok(set);
         }).RequireAuthorization();
+
+        group.MapPut("/{id}", async (Guid id, UpdateLearningSetDto request, ClaimsPrincipal user, ILearningSetService service) =>
+        {
+            var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var set = await service.UpdateSetAsync(id, request, userId);
+            return Results.Ok(set);
+        }).RequireAuthorization();
     }
 }
