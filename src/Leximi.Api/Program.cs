@@ -31,8 +31,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                      ?? "Server=(localdb)\\mssqllocaldb;Database=LeximiDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddInfrastructurePersistence(connectionString);
 builder.Services.AddApplication();
