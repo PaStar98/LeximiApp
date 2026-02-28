@@ -10,13 +10,13 @@ public record CategoryDto(Guid Id, string Name, string? Description);
 public record CreateCategoryDto(string Name, string? Description);
 
 public record LearningSetDto(Guid Id, string Title, string? Description, Guid CategoryId, string Type);
-public record CreateLearningSetDto(string Title, string? Description, Guid CategoryId, string Type);
+public record CreateLearningSetDto(string Title, string? Description, Guid CategoryId, string Type, List<UpdateLearningItemDto>? Items = null);
 
 public record AttemptDto(Guid Id, Guid SetId, DateTime StartedAt, DateTime? FinishedAt, int Score);
 public record AttemptHistoryDto(Guid Id, Guid SetId, string SetTitle, DateTime StartedAt, DateTime? FinishedAt, int Score);
 public record SubmitAnswerDto(Guid QuestionId, Guid? AnswerId, string? ProvidedText);
 
-public record AnswerDto(Guid Id, string Content, bool IsCorrect);
+public record AnswerDto(Guid? Id, string Content, bool IsCorrect);
 public record QuestionDto(Guid Id, string Content, List<AnswerDto> Answers);
 public record FlashcardDto(string Front, string Back);
 public record LearningItemDto(Guid Id, QuestionDto? Question, FlashcardDto? Flashcard);

@@ -42,13 +42,14 @@ export interface LearningSetDto {
 
 export interface CreateLearningSetDto {
     title: string;
-    description?: string;
+    description?: string | null;
     categoryId: string;
     type: string;
+    items?: UpdateLearningItemDto[];
 }
 
 export interface AnswerDto {
-    id: string;
+    id?: string;
     content: string;
     isCorrect: boolean;
 }

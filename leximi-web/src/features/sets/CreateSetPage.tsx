@@ -16,20 +16,11 @@ const CreateSetPage = () => {
 
     const createSetMutation = useMutation({
         mutationFn: async (data: UpdateLearningSetDto) => {
-            // First create the set
             const createDto: CreateLearningSetDto = {
-                title: data.title,
-                description: data.description ?? undefined,
-                type: data.type,
+                ...data,
                 categoryId: categoryId
             };
-            const newSet = await learningSetService.create(createDto);
-
-            // Then update with items if there are any
-            if (data.items && data.items.length > 0) {
-                await learningSetService.update(newSet.id, data);
-            }
-            return newSet;
+            return await learningSetService.create(createDto);
         },
         onSuccess: (newSet) => {
             navigate(`/sets/${newSet.id}`);

@@ -77,7 +77,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
     const handleAddAnswer = (itemIndex: number) => {
         const newItems = [...items];
         const answers = newItems[itemIndex].answers || [];
-        answers.push({ id: '', content: '', isCorrect: false }); // Empty ID for new answers
+        answers.push({ content: '', isCorrect: false }); // No ID for new answers
         newItems[itemIndex].answers = answers;
         setItems(newItems);
     };

@@ -65,8 +65,8 @@ public class LearningSetService : ILearningSetService
 
     public async Task<LearningSetDto> CreateSetAsync(CreateLearningSetDto request, Guid userId)
     {
-        if (!Enum.TryParse<Leximi.Domain.Enums.SetType>(request.Type, out var type))
-            throw new Exception("Invalid set type");
+        if (!Enum.TryParse<Leximi.Domain.Enums.SetType>(request.Type, true, out var type))
+            throw new ArgumentException($"Invalid set type: {request.Type}");
 
         var set = new LearningSet
         {
@@ -74,8 +74,14 @@ public class LearningSetService : ILearningSetService
             Description = request.Description,
             CategoryId = request.CategoryId,
             OwnerId = userId,
-            Type = type
+            Type = type,
+            Items = new List<LearningItem>()
         };
+
+        if (request.Items != null && request.Items.Any())
+        {
+            SyncItems(set, request.Items);
+        }
 
         await _repository.AddAsync(set);
         await _repository.SaveChangesAsync();
@@ -85,16 +91,23 @@ public class LearningSetService : ILearningSetService
     public async Task<LearningSetDetailsDto> UpdateSetAsync(Guid id, UpdateLearningSetDto request, Guid userId)
     {
         var set = await _repository.GetWithItemsAsync(id);
-        if (set == null) throw new Exception("Set not found");
-        if (set.OwnerId != userId) throw new Exception("Unauthorized");
+        if (set == null) throw new KeyNotFoundException("Set not found");
+        if (set.OwnerId != userId) throw new UnauthorizedAccessException("You are not the owner of this set");
 
         set.Title = request.Title;
         set.Description = request.Description;
         
-        // Synchronize Items
-        var requestItems = request.Items ?? new List<UpdateLearningItemDto>();
+        SyncItems(set, request.Items);
+
+        await _repository.SaveChangesAsync();
+        return await GetSetByIdAsync(id);
+    }
+
+    private void SyncItems(LearningSet set, List<UpdateLearningItemDto> requestItems)
+    {
+        requestItems ??= new List<UpdateLearningItemDto>();
         
-        // 1. Remove items not in request
+        // 1. Remove items not in request (only if set already has items and we have IDs in request)
         var itemsToRemove = set.Items.Where(i => !requestItems.Any(ri => ri.Id == i.Id)).ToList();
         foreach (var item in itemsToRemove)
         {
@@ -122,7 +135,10 @@ public class LearningSetService : ILearningSetService
 
                         foreach(var answerDto in itemDto.Answers)
                         {
-                            var existingAnswer = existingItem.Question.Answers.FirstOrDefault(a => a.Id == answerDto.Id);
+                            var existingAnswer = answerDto.Id.HasValue 
+                                ? existingItem.Question.Answers.FirstOrDefault(a => a.Id == answerDto.Id.Value) 
+                                : null;
+
                             if (existingAnswer != null)
                             {
                                 existingAnswer.Content = answerDto.Content;
@@ -167,8 +183,5 @@ public class LearningSetService : ILearningSetService
                 set.Items.Add(newItem);
             }
         }
-
-        await _repository.SaveChangesAsync();
-        return await GetSetByIdAsync(id);
     }
 }
