@@ -114,7 +114,7 @@ const LearningPage = () => {
                                         ${feedback && answer.isCorrect ? 'correct' : ''}
                                         ${feedback && selectedAnswerId === answer.id && !feedback.isCorrect ? 'incorrect' : ''}
                                     `}
-                                    onClick={() => handleAnswerSelect(answer.id)}
+                                    onClick={() => handleAnswerSelect(answer.id || '')}
                                 >
                                     {answer.content}
                                 </div>
@@ -149,7 +149,7 @@ const LearningPage = () => {
                             <div className="front">
                                 <h3>Przód</h3>
                                 <p>{currentItem.flashcard.front}</p>
-                                <span className="hint">(Kliknij aby odwrócić)</span>
+                                <span className="hint">(Kliknij, aby zobaczyć tył)</span>
                             </div>
                             <div className="back">
                                 <h3>Tył</h3>
