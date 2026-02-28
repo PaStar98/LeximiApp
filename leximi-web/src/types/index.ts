@@ -108,8 +108,9 @@ export interface AttemptHistoryDto {
     id: string;
     setId: string;
     setTitle: string;
+    setType: string;
     startedAt: string;
-    finishedAt?: string;
+    finishedAt: string | null;
     score: number;
 }
 // Note: AttemptDto in backend didn't have Title. GetUserHistoryAsync returns AttemptDto.

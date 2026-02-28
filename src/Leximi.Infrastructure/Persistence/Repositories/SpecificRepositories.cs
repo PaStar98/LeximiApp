@@ -35,6 +35,11 @@ public class LearningSetRepository : Repository<LearningSet>, ILearningSetReposi
     }
 }
 
+public class AnswerRepository : Repository<Answer>, IAnswerRepository
+{
+    public AnswerRepository(LeximiDbContext context) : base(context) { }
+}
+
 public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptRepository
 {
     public AttemptRepository(LeximiDbContext context) : base(context) { }
@@ -47,4 +52,22 @@ public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptReposit
             .OrderByDescending(a => a.StartedAt)
             .ToListAsync();
     }
+
+    public async Task<LearningSetAttempt?> GetWithUserAnswersAsync(Guid id)
+    {
+        return await _dbSet
+            .Include(a => a.LearningSet)
+            .Include(a => a.UserAnswers)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<int> CountCorrectAnswersAsync(Guid attemptId)
+    {
+        return await _context.UserAnswers.CountAsync(ua => ua.AttemptId == attemptId && ua.IsCorrect);
+    }
+}
+
+public class UserAnswerRepository : Repository<UserAnswer>, IUserAnswerRepository
+{
+    public UserAnswerRepository(LeximiDbContext context) : base(context) { }
 }

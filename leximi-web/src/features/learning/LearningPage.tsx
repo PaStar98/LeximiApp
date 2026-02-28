@@ -132,8 +132,12 @@ const LearningPage = () => {
                         ) : (
                             <div className={`feedback ${feedback.isCorrect ? 'success' : 'error'}`}>
                                 <p>{feedback.message}</p>
-                                <button onClick={handleNext} className="action-button">
-                                    {isLastItem ? 'Zakończ' : 'Następne'}
+                                <button
+                                    onClick={handleNext}
+                                    className="action-button"
+                                    disabled={submitAnswerMutation.isPending || finishAttemptMutation.isPending}
+                                >
+                                    {(submitAnswerMutation.isPending || finishAttemptMutation.isPending) ? 'Przetwarzanie...' : (isLastItem ? 'Zakończ' : 'Następne')}
                                 </button>
                             </div>
                         )}

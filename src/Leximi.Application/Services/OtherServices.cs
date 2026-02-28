@@ -106,8 +106,9 @@ public class LearningSetService : ILearningSetService
     private void SyncItems(LearningSet set, List<UpdateLearningItemDto> requestItems)
     {
         requestItems ??= new List<UpdateLearningItemDto>();
+        bool isQuestionBased = set.Type != Leximi.Domain.Enums.SetType.Flashcards;
         
-        // 1. Remove items not in request (only if set already has items and we have IDs in request)
+        // 1. Remove items not in request
         var itemsToRemove = set.Items.Where(i => !requestItems.Any(ri => ri.Id == i.Id)).ToList();
         foreach (var item in itemsToRemove)
         {
@@ -122,7 +123,7 @@ public class LearningSetService : ILearningSetService
             if (existingItem != null)
             {
                 // Update
-                if (set.Type == Leximi.Domain.Enums.SetType.Quiz && itemDto.QuestionContent != null)
+                if (isQuestionBased && itemDto.QuestionContent != null)
                 {
                     if (existingItem.Question == null) existingItem.Question = new Question { Content = itemDto.QuestionContent };
                     existingItem.Question.Content = itemDto.QuestionContent;
@@ -151,7 +152,7 @@ public class LearningSetService : ILearningSetService
                         }
                     }
                 }
-                else if (set.Type == Leximi.Domain.Enums.SetType.Flashcards && itemDto.FlashcardFront != null)
+                else if (!isQuestionBased && itemDto.FlashcardFront != null)
                 {
                     if (existingItem.Flashcard == null) 
                         existingItem.Flashcard = new Flashcard { Front = itemDto.FlashcardFront, Back = itemDto.FlashcardBack ?? "" };
@@ -164,7 +165,7 @@ public class LearningSetService : ILearningSetService
             {
                 // Add New
                 var newItem = new LearningItem { LearningSetId = set.Id };
-                if (set.Type == Leximi.Domain.Enums.SetType.Quiz)
+                if (isQuestionBased)
                 {
                     newItem.Question = new Question 
                     { 

@@ -135,11 +135,13 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                     >
                         <option value="Flashcards">Fiszki</option>
                         <option value="Quiz">Quiz</option>
+                        <option value="Test">Test</option>
+                        <option value="Exam">Egzamin</option>
                     </select>
                 </div>
             )}
 
-            <h3>Elementy ({type === 'Quiz' ? 'Pytania' : 'Fiszki'})</h3>
+            <h3>Elementy ({type !== 'Flashcards' ? 'Pytania' : 'Fiszki'})</h3>
 
             <div className="items-list">
                 {items.map((item, index) => (
@@ -149,7 +151,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                             <button type="button" onClick={() => handleRemoveItem(index)} className="btn-remove">Usuń</button>
                         </div>
 
-                        {type === 'Quiz' ? (
+                        {type !== 'Flashcards' ? (
                             <>
                                 <input
                                     type="text"

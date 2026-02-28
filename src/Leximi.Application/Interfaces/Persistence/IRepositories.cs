@@ -26,7 +26,17 @@ public interface ILearningSetRepository : IRepository<LearningSet>
     Task<LearningSet?> GetWithItemsAsync(Guid id);
 }
 
+public interface IAnswerRepository : IRepository<Answer>
+{
+}
+
 public interface IAttemptRepository : IRepository<LearningSetAttempt>
 {
     Task<IEnumerable<LearningSetAttempt>> GetByUserIdAsync(Guid userId);
+    Task<LearningSetAttempt?> GetWithUserAnswersAsync(Guid id);
+    Task<int> CountCorrectAnswersAsync(Guid attemptId);
+}
+
+public interface IUserAnswerRepository : IRepository<UserAnswer>
+{
 }
