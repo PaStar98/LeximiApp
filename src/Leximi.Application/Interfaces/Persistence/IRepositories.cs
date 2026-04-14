@@ -1,8 +1,10 @@
 using Leximi.Domain.Entities;
 
+using Leximi.Domain.Common;
+
 namespace Leximi.Application.Interfaces.Persistence;
 
-public interface IRepository<T> where T : class
+public interface IRepository<T> where T : BaseEntity
 {
     Task<T?> GetByIdAsync(Guid id);
     Task<IEnumerable<T>> GetAllAsync();
@@ -10,6 +12,7 @@ public interface IRepository<T> where T : class
     void Update(T entity);
     void Delete(T entity);
     Task SaveChangesAsync();
+    void ClearTracker();
 }
 
 public interface IUserRepository : IRepository<User>
@@ -24,6 +27,7 @@ public interface ICategoryRepository : IRepository<Category>
 public interface ILearningSetRepository : IRepository<LearningSet>
 {
     Task<LearningSet?> GetWithItemsAsync(Guid id);
+    Task<LearningSet?> GetWithItemsForUpdateAsync(Guid id);
 }
 
 public interface IAnswerRepository : IRepository<Answer>

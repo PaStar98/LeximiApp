@@ -10,7 +10,10 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructurePersistence(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<LeximiDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        {
+            options.UseSqlServer(connectionString);
+            options.EnableSensitiveDataLogging(); // Helps diagnose concurrency issues
+        });
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();

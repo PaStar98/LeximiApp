@@ -14,7 +14,7 @@ public record CreateLearningSetDto(string Title, string? Description, Guid Categ
 
 public record AttemptDto(Guid Id, Guid SetId, DateTime StartedAt, DateTime? FinishedAt, int Score);
 public record AttemptHistoryDto(Guid Id, Guid SetId, string SetTitle, string SetType, DateTime StartedAt, DateTime? FinishedAt, int Score);
-public record SubmitAnswerDto(Guid QuestionId, Guid? AnswerId, string? ProvidedText);
+public record SubmitAnswerDto(Guid LearningItemId, Guid? AnswerId, string? ProvidedText);
 
 public record AnswerDto(Guid? Id, string Content, bool IsCorrect);
 public record QuestionDto(Guid Id, string Content, List<AnswerDto> Answers);
@@ -25,4 +25,4 @@ public record LearningSetDetailsDto(Guid Id, string Title, string? Description, 
 
 public record UpdateLearningItemDto(Guid? Id, string? QuestionContent, List<AnswerDto>? Answers, string? FlashcardFront, string? FlashcardBack);
 
-public record UpdateLearningSetDto(string Title, string? Description, string Type, List<UpdateLearningItemDto> Items);
+public record UpdateLearningSetDto(string Title, string? Description, string Type, Guid CategoryId, List<UpdateLearningItemDto> Items);

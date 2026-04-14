@@ -87,6 +87,7 @@ export interface UpdateLearningSetDto {
     title: string;
     description?: string | null;
     type: string;
+    categoryId: string;
     items: UpdateLearningItemDto[];
 }
 

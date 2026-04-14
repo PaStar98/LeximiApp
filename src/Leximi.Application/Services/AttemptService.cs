@@ -65,7 +65,7 @@ public class AttemptService : IAttemptService
         var userAnswer = new UserAnswer
         {
             AttemptId = attemptId,
-            QuestionId = request.QuestionId,
+            LearningItemId = request.LearningItemId,
             AnswerId = request.AnswerId,
             ProvidedText = request.ProvidedText,
             IsCorrect = isCorrect

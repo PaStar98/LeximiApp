@@ -39,15 +39,14 @@ public class LearningSetServiceTests
                 new LearningItem
                 {
                     Id = itemId,
-                    Question = new Question
-                    {
-                        Content = "Old Question",
-                        Answers = new List<Answer>()
-                    }
+                    QuestionContent = "Old Question",
+                    Answers = new List<Answer>()
                 }
             }
         };
 
+        _repositoryMock.Setup(r => r.GetWithItemsForUpdateAsync(setId))
+            .ReturnsAsync(existingSet);
         _repositoryMock.Setup(r => r.GetWithItemsAsync(setId))
             .ReturnsAsync(existingSet);
 
@@ -55,6 +54,7 @@ public class LearningSetServiceTests
             "New Title",
             "Description",
             "Quiz",
+            Guid.NewGuid(), // CategoryId
             new List<UpdateLearningItemDto>
             {
                 new UpdateLearningItemDto(
@@ -74,9 +74,9 @@ public class LearningSetServiceTests
         await _service.UpdateSetAsync(setId, updateDto, userId);
 
         // Assert
-        existingSet.Items.First().Question!.Answers.Should().HaveCount(1);
-        existingSet.Items.First().Question!.Answers.First().Content.Should().Be("New Correct Answer");
-        existingSet.Items.First().Question!.Answers.First().IsCorrect.Should().BeTrue();
+        existingSet.Items.First().Answers.Should().HaveCount(1);
+        existingSet.Items.First().Answers.First().Content.Should().Be("New Correct Answer");
+        existingSet.Items.First().Answers.First().IsCorrect.Should().BeTrue();
         _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
     [Fact]
@@ -108,9 +108,100 @@ public class LearningSetServiceTests
         _repositoryMock.Verify(r => r.AddAsync(It.Is<LearningSet>(s => 
             s.Title == "New Set" && 
             s.Items.Count == 2 &&
-            s.Items.Any(i => i.Flashcard!.Front == "Front 1")
+            s.Items.Any(i => i.FlashcardFront == "Front 1")
         )), Times.Once);
         _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         result.Title.Should().Be("New Set");
+    }
+
+    [Fact]
+    public async Task UpdateSetAsync_Should_Mark_Item_As_Deleted_When_Absent_In_Request()
+    {
+        // Arrange
+        var setId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var itemIdToKeep = Guid.NewGuid();
+        var itemIdToRemove = Guid.NewGuid();
+        
+        var existingSet = new LearningSet 
+        { 
+            Id = setId, 
+            Title = "Test Set", 
+            Type = SetType.Quiz, 
+            OwnerId = userId,
+            Items = new List<LearningItem>
+            {
+                new LearningItem { Id = itemIdToKeep, QuestionContent = "Keep Me", Answers = new List<Answer>() },
+                new LearningItem { Id = itemIdToRemove, QuestionContent = "Remove Me", Answers = new List<Answer>() }
+            }
+        };
+
+        _repositoryMock.Setup(r => r.GetWithItemsForUpdateAsync(setId))
+            .ReturnsAsync(existingSet);
+        _repositoryMock.Setup(r => r.GetWithItemsAsync(setId))
+            .ReturnsAsync(existingSet);
+
+        var updateDto = new UpdateLearningSetDto(
+            "Test Set",
+            null,
+            "Quiz",
+            Guid.NewGuid(), // CategoryId
+            new List<UpdateLearningItemDto>
+            {
+                new UpdateLearningItemDto(itemIdToKeep, "Keep Me", new List<AnswerDto>(), null, null)
+            }
+        );
+
+        // Act
+        await _service.UpdateSetAsync(setId, updateDto, userId);
+
+        // Assert
+        existingSet.Items.Should().HaveCount(2); // Should NOT be removed from collection
+        existingSet.Items.First(i => i.Id == itemIdToRemove).IsDeleted.Should().BeTrue();
+        existingSet.Items.First(i => i.Id == itemIdToKeep).IsDeleted.Should().BeFalse();
+        _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task UpdateSetAsync_Should_Not_Add_Item_With_Empty_Content()
+    {
+        // Arrange
+        var setId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        
+        var existingSet = new LearningSet 
+        { 
+            Id = setId, 
+            Title = "Test Set", 
+            Type = SetType.Quiz, 
+            OwnerId = userId,
+            Items = new List<LearningItem>()
+        };
+
+        _repositoryMock.Setup(r => r.GetWithItemsForUpdateAsync(setId))
+            .ReturnsAsync(existingSet);
+        _repositoryMock.Setup(r => r.GetWithItemsAsync(setId))
+            .ReturnsAsync(existingSet);
+
+        var updateDto = new UpdateLearningSetDto(
+            "Test Set",
+            null,
+            "Quiz",
+            Guid.NewGuid(),
+            new List<UpdateLearningItemDto>
+            {
+                new UpdateLearningItemDto(null, "   ", new List<AnswerDto>(), null, null), // Empty question
+                new UpdateLearningItemDto(null, "Valid Question", new List<AnswerDto> { new AnswerDto(null, "  ", false) }, null, null) // Question with empty answer
+            }
+        );
+
+        // Act
+        await _service.UpdateSetAsync(setId, updateDto, userId);
+
+        // Assert
+        existingSet.Items.Should().HaveCount(1);
+        existingSet.Items.First().QuestionContent.Should().Be("Valid Question");
+        existingSet.Items.First().Answers.Should().BeEmpty();
+        _repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }

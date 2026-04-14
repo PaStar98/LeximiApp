@@ -23,33 +23,19 @@ public class LearningItem : BaseEntity
     public Guid LearningSetId { get; set; }
     public virtual LearningSet LearningSet { get; set; } = null!;
     
-    public virtual Question? Question { get; set; }
-    public virtual Flashcard? Flashcard { get; set; }
-}
-
-public class Question : BaseEntity
-{
-    public Guid LearningItemId { get; set; }
-    public virtual LearningItem LearningItem { get; set; } = null!;
-    
-    public required string Content { get; set; }
+    public string? QuestionContent { get; set; }
     public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
+
+    public string? FlashcardFront { get; set; }
+    public string? FlashcardBack { get; set; }
 }
 
 public class Answer : BaseEntity
 {
-    public Guid QuestionId { get; set; }
-    public virtual Question Question { get; set; } = null!;
+    public Guid LearningItemId { get; set; }
+    public virtual LearningItem LearningItem { get; set; } = null!;
     
     public required string Content { get; set; }
     public bool IsCorrect { get; set; }
 }
 
-public class Flashcard : BaseEntity
-{
-    public Guid LearningItemId { get; set; }
-    public virtual LearningItem LearningItem { get; set; } = null!;
-    
-    public required string Front { get; set; }
-    public required string Back { get; set; }
-}

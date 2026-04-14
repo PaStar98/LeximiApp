@@ -29,16 +29,36 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
     // For `CreateSet`, we usually pick a category first or in the form. 
     // Simplification: `SetEditor` returns `UpdateLearningSetDto`. Parent adds `categoryId` if creating.
 
-    const [type, setType] = useState(initialData?.type || 'Flashcards');
-    const [items, setItems] = useState<UpdateLearningItemDto[]>(
-        initialData?.items.map(i => ({
-            id: i.id,
-            questionContent: i.question?.content,
-            answers: i.question?.answers,
-            flashcardFront: i.flashcard?.front,
-            flashcardBack: i.flashcard?.back
-        })) || []
-    );
+    const [type, setType] = useState('Flashcards');
+    const [items, setItems] = useState<UpdateLearningItemDto[]>([]);
+
+    useEffect(() => {
+        if (initialData) {
+            setTitle(initialData.title || '');
+            setDescription(initialData.description || '');
+            setCategoryId(initialData.categoryId || '');
+            setType(initialData.type || 'Flashcards');
+
+            const normalizedItems = initialData.items.map(i => {
+                // Handle potential PascalCase from API if it happens
+                const question = i.question;
+                const flashcard = i.flashcard;
+
+                return {
+                    id: i.id,
+                    questionContent: question?.content,
+                    flashcardFront: flashcard?.front,
+                    flashcardBack: flashcard?.back,
+                    answers: question?.answers?.map(a => ({
+                        id: a.id,
+                        content: a.content,
+                        isCorrect: a.isCorrect
+                    })) || []
+                };
+            });
+            setItems(normalizedItems);
+        }
+    }, [initialData]);
 
     const { data: categories } = useQuery({
         queryKey: ['categories'],
@@ -96,6 +116,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
             title,
             description,
             type,
+            categoryId,
             items
         });
     };
@@ -182,7 +203,9 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                                             <button type="button" onClick={() => handleRemoveAnswer(index, ansIndex)} className="btn-icon">×</button>
                                         </div>
                                     ))}
-                                    <button type="button" onClick={() => handleAddAnswer(index)} className="btn-small">+ Dodaj odpowiedź</button>
+                                    {!initialData && (
+                                        <button type="button" onClick={() => handleAddAnswer(index)} className="btn-small">+ Dodaj odpowiedź</button>
+                                    )}
                                 </div>
                             </>
                         ) : (
@@ -207,7 +230,9 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                 ))}
             </div>
 
-            <button type="button" onClick={handleAddItem} className="btn-secondary w-full mt-4">+ Dodaj element</button>
+            {!initialData && (
+                <button type="button" onClick={handleAddItem} className="btn-secondary w-full mt-4">+ Dodaj element</button>
+            )}
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full mt-4">
                 {isSubmitting ? 'Zapisywanie...' : 'Zapisz Zestaw'}
             </button>

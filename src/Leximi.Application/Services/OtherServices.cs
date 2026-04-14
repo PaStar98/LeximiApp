@@ -45,12 +45,12 @@ public class LearningSetService : ILearningSetService
 
         var items = set.Items.Select(i => new LearningItemDto(
             i.Id,
-            i.Question != null ? new QuestionDto(
-                i.Question.Id, 
-                i.Question.Content, 
-                i.Question.Answers.Select(a => new AnswerDto(a.Id, a.Content, a.IsCorrect)).ToList()
+            !string.IsNullOrEmpty(i.QuestionContent) ? new QuestionDto(
+                Guid.Empty, // QuestionId is gone
+                i.QuestionContent, 
+                i.Answers.Select(a => new AnswerDto(a.Id, a.Content, a.IsCorrect)).ToList()
             ) : null,
-            i.Flashcard != null ? new FlashcardDto(i.Flashcard.Front, i.Flashcard.Back) : null
+            !string.IsNullOrEmpty(i.FlashcardFront) ? new FlashcardDto(i.FlashcardFront, i.FlashcardBack ?? "") : null
         )).ToList();
 
         return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), items);
@@ -90,16 +90,39 @@ public class LearningSetService : ILearningSetService
 
     public async Task<LearningSetDetailsDto> UpdateSetAsync(Guid id, UpdateLearningSetDto request, Guid userId)
     {
-        var set = await _repository.GetWithItemsAsync(id);
-        if (set == null) throw new KeyNotFoundException("Set not found");
-        if (set.OwnerId != userId) throw new UnauthorizedAccessException("You are not the owner of this set");
+        int maxRetries = 3;
+        int currentRetry = 0;
 
-        set.Title = request.Title;
-        set.Description = request.Description;
+        while (true)
+        {
+            try
+            {
+                var set = await _repository.GetWithItemsForUpdateAsync(id);
+                if (set == null) throw new KeyNotFoundException("Set not found");
+                if (set.OwnerId != userId) throw new UnauthorizedAccessException("You are not the owner of this set");
+
+                set.Title = request.Title;
+                set.Description = request.Description;
+                set.CategoryId = request.CategoryId;
+
+                if (Enum.TryParse<Leximi.Domain.Enums.SetType>(request.Type, true, out var newType))
+                {
+                    set.Type = newType;
+                }
+                
+                SyncItems(set, request.Items);
+
+                await _repository.SaveChangesAsync();
+                break;
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException) when (currentRetry < maxRetries)
+            {
+                _repository.ClearTracker();
+                currentRetry++;
+                await Task.Delay(100 * currentRetry);
+            }
+        }
         
-        SyncItems(set, request.Items);
-
-        await _repository.SaveChangesAsync();
         return await GetSetByIdAsync(id);
     }
 
@@ -108,36 +131,43 @@ public class LearningSetService : ILearningSetService
         requestItems ??= new List<UpdateLearningItemDto>();
         bool isQuestionBased = set.Type != Leximi.Domain.Enums.SetType.Flashcards;
         
-        // 1. Remove items not in request
-        var itemsToRemove = set.Items.Where(i => !requestItems.Any(ri => ri.Id == i.Id)).ToList();
+        var itemsToRemove = set.Items
+            .Where(i => !i.IsDeleted)
+            .Where(i => !requestItems.Any(ri => ri.Id == i.Id))
+            .ToList();
+
         foreach (var item in itemsToRemove)
         {
-            set.Items.Remove(item);
+            item.IsDeleted = true;
+            foreach(var a in item.Answers.Where(a => !a.IsDeleted)) a.IsDeleted = true;
         }
 
-        // 2. Add or Update items
         foreach (var itemDto in requestItems)
         {
             var existingItem = itemDto.Id.HasValue ? set.Items.FirstOrDefault(i => i.Id == itemDto.Id.Value) : null;
 
             if (existingItem != null)
             {
-                // Update
-                if (isQuestionBased && itemDto.QuestionContent != null)
+                existingItem.IsDeleted = false;
+                
+                if (isQuestionBased)
                 {
-                    if (existingItem.Question == null) existingItem.Question = new Question { Content = itemDto.QuestionContent };
-                    existingItem.Question.Content = itemDto.QuestionContent;
+                    existingItem.QuestionContent = itemDto.QuestionContent;
+                    existingItem.FlashcardFront = null;
+                    existingItem.FlashcardBack = null;
                     
-                    // Sync Answers
                     if (itemDto.Answers != null)
                     {
-                        var answersToRemove = existingItem.Question.Answers.Where(a => !itemDto.Answers.Any(ra => ra.Id == a.Id)).ToList();
-                        foreach(var a in answersToRemove) existingItem.Question.Answers.Remove(a);
+                        var answersToRemove = existingItem.Answers
+                            .Where(a => !a.IsDeleted)
+                            .Where(a => !itemDto.Answers.Any(ra => ra.Id == a.Id))
+                            .ToList();
+                        foreach(var a in answersToRemove) a.IsDeleted = true;
 
                         foreach(var answerDto in itemDto.Answers)
                         {
                             var existingAnswer = answerDto.Id.HasValue 
-                                ? existingItem.Question.Answers.FirstOrDefault(a => a.Id == answerDto.Id.Value) 
+                                ? existingItem.Answers.FirstOrDefault(a => a.Id == answerDto.Id.Value) 
                                 : null;
 
                             if (existingAnswer != null)
@@ -147,42 +177,59 @@ public class LearningSetService : ILearningSetService
                             }
                             else
                             {
-                                existingItem.Question.Answers.Add(new Answer { Content = answerDto.Content, IsCorrect = answerDto.IsCorrect });
+                                existingItem.Answers.Add(new Answer 
+                                { 
+                                    LearningItemId = existingItem.Id,
+                                    Content = answerDto.Content, 
+                                    IsCorrect = answerDto.IsCorrect 
+                                });
                             }
                         }
                     }
                 }
-                else if (!isQuestionBased && itemDto.FlashcardFront != null)
+                else
                 {
-                    if (existingItem.Flashcard == null) 
-                        existingItem.Flashcard = new Flashcard { Front = itemDto.FlashcardFront, Back = itemDto.FlashcardBack ?? "" };
-                    
-                    existingItem.Flashcard.Front = itemDto.FlashcardFront;
-                    existingItem.Flashcard.Back = itemDto.FlashcardBack ?? "";
+                    existingItem.FlashcardFront = itemDto.FlashcardFront;
+                    existingItem.FlashcardBack = itemDto.FlashcardBack;
+                    existingItem.QuestionContent = null;
+                    // Flashcards don't use Answers, mark all as deleted if any
+                    foreach(var a in existingItem.Answers) a.IsDeleted = true;
                 }
             }
             else
             {
-                // Add New
-                var newItem = new LearningItem { LearningSetId = set.Id };
-                if (isQuestionBased)
+                // Only add if there's actual content
+                bool hasContent = isQuestionBased 
+                    ? !string.IsNullOrWhiteSpace(itemDto.QuestionContent) 
+                    : !string.IsNullOrWhiteSpace(itemDto.FlashcardFront);
+
+                if (hasContent)
                 {
-                    newItem.Question = new Question 
+                    var newItem = new LearningItem 
                     { 
-                        Content = itemDto.QuestionContent ?? "",
-                        Answers = itemDto.Answers?.Select(a => new Answer { Content = a.Content, IsCorrect = a.IsCorrect }).ToList() ?? new List<Answer>()
+                        LearningSetId = set.Id,
+                        QuestionContent = isQuestionBased ? itemDto.QuestionContent : null,
+                        FlashcardFront = !isQuestionBased ? itemDto.FlashcardFront : null,
+                        FlashcardBack = !isQuestionBased ? itemDto.FlashcardBack : null,
                     };
-                }
-                else
-                {
-                    newItem.Flashcard = new Flashcard
+                    
+                    if (isQuestionBased && itemDto.Answers != null)
                     {
-                        Front = itemDto.FlashcardFront ?? "",
-                        Back = itemDto.FlashcardBack ?? ""
-                    };
+                        foreach (var a in itemDto.Answers.Where(a => !string.IsNullOrWhiteSpace(a.Content)))
+                        {
+                            newItem.Answers.Add(new Answer 
+                            { 
+                                LearningItemId = newItem.Id, 
+                                Content = a.Content, 
+                                IsCorrect = a.IsCorrect 
+                            });
+                        }
+                    }
+                    
+                    set.Items.Add(newItem);
                 }
-                set.Items.Add(newItem);
             }
         }
     }
+
 }

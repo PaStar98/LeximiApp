@@ -57,4 +57,11 @@ app.MapCategoryEndpoints();
 app.MapLearningSetEndpoints();
 app.MapAttemptEndpoints();
 
+// Seed database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<Leximi.Infrastructure.Persistence.LeximiDbContext>();
+    await Leximi.Infrastructure.Persistence.DbSeeder.SeedAsync(db);
+}
+
 app.Run();

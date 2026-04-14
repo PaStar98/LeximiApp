@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Leximi.Application.Interfaces.Persistence;
+using Leximi.Domain.Common;
 
 namespace Leximi.Infrastructure.Persistence.Repositories;
 
-public class Repository<T> : IRepository<T> where T : class
+public class Repository<T> : IRepository<T> where T : BaseEntity
 {
     protected readonly LeximiDbContext _context;
     protected readonly DbSet<T> _dbSet;
@@ -25,4 +26,6 @@ public class Repository<T> : IRepository<T> where T : class
     public void Delete(T entity) => _dbSet.Remove(entity);
 
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+
+    public void ClearTracker() => _context.ChangeTracker.Clear();
 }

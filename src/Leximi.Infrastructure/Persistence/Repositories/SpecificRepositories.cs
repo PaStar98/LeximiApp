@@ -10,7 +10,7 @@ public class UserRepository : Repository<User>, IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
+        return await _dbSet.FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
     }
 }
 
@@ -26,12 +26,20 @@ public class LearningSetRepository : Repository<LearningSet>, ILearningSetReposi
     public async Task<LearningSet?> GetWithItemsAsync(Guid id)
     {
         return await _dbSet
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Question)
-                    .ThenInclude(q => q.Answers)
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Flashcard)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .Include(s => s.Items.Where(i => !i.IsDeleted))
+                .ThenInclude(i => i.Answers.Where(a => !a.IsDeleted))
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+    }
+
+    public async Task<LearningSet?> GetWithItemsForUpdateAsync(Guid id)
+    {
+        // Load ONLY non-deleted items and answers.
+        // This is the key: if soft-deleted entities are never loaded into the tracker,
+        // there's nothing to detach, and EF's DetectChanges can't re-track them.
+        return await _dbSet
+            .Include(s => s.Items.Where(i => !i.IsDeleted))
+                .ThenInclude(i => i.Answers.Where(a => !a.IsDeleted))
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
 }
 
@@ -48,7 +56,7 @@ public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptReposit
     {
         return await _dbSet
             .Include(a => a.LearningSet)
-            .Where(a => a.UserId == userId)
+            .Where(a => a.UserId == userId && !a.IsDeleted)
             .OrderByDescending(a => a.StartedAt)
             .ToListAsync();
     }
@@ -56,9 +64,10 @@ public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptReposit
     public async Task<LearningSetAttempt?> GetWithUserAnswersAsync(Guid id)
     {
         return await _dbSet
+            .AsSplitQuery()
             .Include(a => a.LearningSet)
-            .Include(a => a.UserAnswers)
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .Include(a => a.UserAnswers.Where(ua => !ua.IsDeleted))
+            .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
     }
 
     public async Task<int> CountCorrectAnswersAsync(Guid attemptId)

@@ -4,6 +4,7 @@ using Leximi.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Leximi.Infrastructure.Migrations
 {
     [DbContext(typeof(LeximiDbContext))]
-    partial class LeximiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260228112237_SimplifiedDomain")]
+    partial class SimplifiedDomain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,7 +278,7 @@ namespace Leximi.Infrastructure.Migrations
                     b.HasOne("Leximi.Domain.Entities.LearningItem", "LearningItem")
                         .WithMany("Answers")
                         .HasForeignKey("LearningItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("LearningItem");
@@ -286,7 +289,7 @@ namespace Leximi.Infrastructure.Migrations
                     b.HasOne("Leximi.Domain.Entities.LearningSet", "LearningSet")
                         .WithMany("Items")
                         .HasForeignKey("LearningSetId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("LearningSet");
