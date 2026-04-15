@@ -115,9 +115,11 @@ button:hover {
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto 1.5rem auto;
     text-align: left;
 }
+
 
 .form-group label {
     display: block;
@@ -205,19 +207,34 @@ button:hover {
     text-align: left;
 }
 
+.set-editor h3 {
+    margin: 3rem 0 1.5rem 0;
+    border-bottom: 2px solid #333;
+    padding-bottom: 0.75rem;
+    color: #646cff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
 .editor-item-card {
     background-color: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     position: relative;
-    transition: border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .editor-item-card:hover {
     border-color: #646cff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 }
+
 
 .item-header {
     display: flex;

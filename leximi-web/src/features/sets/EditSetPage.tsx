@@ -27,8 +27,9 @@ const EditSetPage = () => {
     if (!set) return <div>Nie znaleziono zestawu.</div>;
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Edytuj zestaw: {set.title}</h1>
+        <div className="app-main">
+            <h1>Edytuj zestaw: {set.title}</h1>
+
             <SetEditor
                 initialData={set}
                 onSubmit={(data) => updateSetMutation.mutate(data)}

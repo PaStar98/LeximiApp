@@ -36,11 +36,11 @@ const CreateSetPage = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Stwórz nowy zestaw</h1>
+        <div className="app-main">
+            <h1>Stwórz nowy zestaw</h1>
 
-            <div className="mb-4">
-                <label className="block mb-2">Kategoria</label>
+            <div className="form-group">
+                <label>Kategoria</label>
                 <select
                     value={categoryId}
                     onChange={e => setCategoryId(e.target.value)}
