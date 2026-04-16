@@ -17,14 +17,22 @@ const CategorySetsPage = () => {
 
     return (
         <div className="sets-container">
-            <h2>Zestawy do nauki</h2>
-            <div className="sets-list">
+            <h1 className="mb-4">Zestawy do nauki</h1>
+            <div className="sets-grid">
                 {sets.map((set) => (
                     <div key={set.id} className="set-card">
-                        <h3>{set.title}</h3>
+                        <div className="set-card-header">
+                            <h3>{set.title}</h3>
+                            <div className="set-meta">
+                                <span className={`set-type-badge ${set.type?.toLowerCase()}`}>
+                                    {set.type}
+                                </span>
+                            </div>
+                        </div>
                         <p>{set.description}</p>
-                        <span className="set-type-badge">{set.type}</span>
-                        <Link to={`/sets/${set.id}`} className="button-link">Wybierz</Link>
+                        <div className="set-card-footer">
+                            <Link to={`/sets/${set.id}`} className="button-link">Wybierz</Link>
+                        </div>
                     </div>
                 ))}
             </div>

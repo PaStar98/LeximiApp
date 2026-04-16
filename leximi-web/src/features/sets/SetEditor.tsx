@@ -156,8 +156,6 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                     >
                         <option value="Flashcards">Fiszki</option>
                         <option value="Quiz">Quiz</option>
-                        <option value="Test">Test</option>
-                        <option value="Exam">Egzamin</option>
                     </select>
                 </div>
             )}
