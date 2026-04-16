@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryService } from '../../api/services';
 import { Link } from 'react-router-dom';
 
 const CatalogPage = () => {
+    const [searchTerm, setSearchTerm] = useState('');
     const { data: categories, isLoading, error } = useQuery({
         queryKey: ['categories'],
         queryFn: categoryService.getAll,
@@ -11,17 +13,39 @@ const CatalogPage = () => {
     if (isLoading) return <div>Ładowanie kategorii...</div>;
     if (error) return <div>Wystąpił błąd podczas pobierania kategorii.</div>;
 
+    const filteredCategories = categories?.filter(category =>
+        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
     return (
         <div className="catalog-container">
-            <h1>Katalog Nauki</h1>
+            <div className="catalog-header">
+                <h1>Katalog Nauki</h1>
+                <div className="search-box">
+                    <input
+                        type="text"
+                        placeholder="Szukaj kategorii..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                    <span className="search-icon">🔍</span>
+                </div>
+            </div>
+
             <div className="category-grid">
-                {categories?.map((category) => (
-                    <div key={category.id} className="category-card">
-                        <h3>{category.name}</h3>
-                        <p>{category.description}</p>
-                        <Link to={`/catalog/${category.id}`} className="button-link">Zobacz zestawy</Link>
-                    </div>
-                ))}
+                {filteredCategories && filteredCategories.length > 0 ? (
+                    filteredCategories.map((category) => (
+                        <div key={category.id} className="category-card">
+                            <h3>{category.name}</h3>
+                            <p>{category.description}</p>
+                            <Link to={`/catalog/${category.id}`} className="button-link">Zobacz zestawy</Link>
+                        </div>
+                    ))
+                ) : (
+                    <div className="no-results">Nie znaleziono kategorii pasujących do "{searchTerm}".</div>
+                )}
             </div>
         </div>
     );
