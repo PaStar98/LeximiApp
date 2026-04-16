@@ -194,6 +194,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                                                 <input
                                                     type="checkbox"
                                                     checked={answer.isCorrect}
+                                                    disabled={!answer.isCorrect && item.answers?.some(a => a.isCorrect)}
                                                     onChange={e => handleAnswerChange(index, ansIndex, 'isCorrect', e.target.checked)}
                                                 />
                                                 Poprawna
