@@ -78,7 +78,7 @@ const LearningPage = () => {
         submitAnswerMutation.mutate({
             attemptId: attemptId!,
             data: {
-                questionId: currentItem.question.id,
+                learningItemId: currentItem.id,
                 answerId: selectedAnswerId
             }
         });

@@ -100,7 +100,7 @@ export interface AttemptDto {
 }
 
 export interface SubmitAnswerDto {
-    questionId: string;
+    learningItemId: string;
     answerId?: string;
     providedText?: string;
 }
