@@ -63,7 +63,9 @@ const CreateSetPage = () => {
                     className="input-field"
                     placeholder="Wpisz nazwę kategorii (np. Historia, Angielski...)"
                     required
+                    maxLength={25}
                 />
+                <small className="char-counter">{categoryName.length} / 25</small>
                 <datalist id="category-options">
                     {categories?.map(cat => (
                         <option key={cat.id} value={cat.name} />

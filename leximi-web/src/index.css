@@ -750,6 +750,14 @@ button:hover {
     font-size: 1.1rem;
 }
 
+.char-counter {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
 .history-section {
     margin-top: 2rem;
 }

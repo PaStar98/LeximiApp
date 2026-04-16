@@ -130,7 +130,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isFormValid()) return;
-        
+
         onSubmit({
             title,
             description,
@@ -149,8 +149,10 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     required
+                    maxLength={25}
                     className="input-field"
                 />
+                <small className="char-counter">{title.length} / 25</small>
             </div>
 
             <div className="form-group">
@@ -159,7 +161,9 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     className="input-field"
+                    maxLength={125}
                 />
+                <small className="char-counter">{description.length} / 125</small>
             </div>
 
             {!initialData && (
