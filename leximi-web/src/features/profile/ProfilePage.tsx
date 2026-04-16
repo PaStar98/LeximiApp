@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { authService, attemptService } from '../../api/services';
 
@@ -38,7 +39,11 @@ const ProfilePage = () => {
                         <tbody>
                             {history.map((attempt) => (
                                 <tr key={attempt.id}>
-                                    <td>{attempt.setTitle}</td>
+                                    <td>
+                                        <Link to={`/sets/${attempt.setId}`} className="table-link">
+                                            {attempt.setTitle}
+                                        </Link>
+                                    </td>
                                     <td>{attempt.setType}</td>
                                     <td>{new Date(attempt.startedAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</td>
                                     <td>{attempt.finishedAt ? new Date(attempt.finishedAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'W trakcie'}</td>

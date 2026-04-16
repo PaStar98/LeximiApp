@@ -616,6 +616,18 @@ button:hover {
     color: #4ade80;
 }
 
+.table-link {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.table-link:hover {
+    color: #646cff;
+    text-decoration: underline;
+}
+
 .feedback.error {
     background-color: rgba(248, 113, 113, 0.1);
     color: #f87171;
