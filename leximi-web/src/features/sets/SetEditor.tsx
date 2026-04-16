@@ -110,8 +110,27 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
         setItems(newItems);
     };
 
+    const isFormValid = () => {
+        if (!title.trim() || items.length === 0) return false;
+
+        return items.every(item => {
+            if (type === 'Flashcards') {
+                return item.flashcardFront?.trim() && item.flashcardBack?.trim();
+            } else {
+                const hasQuestionContent = !!item.questionContent?.trim();
+                const hasAnswers = item.answers && item.answers.length > 0;
+                const allAnswersHaveContent = item.answers?.every(a => !!a.content?.trim());
+                const hasCorrectAnswer = item.answers?.some(a => a.isCorrect);
+
+                return hasQuestionContent && hasAnswers && allAnswersHaveContent && hasCorrectAnswer;
+            }
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isFormValid()) return;
+        
         onSubmit({
             title,
             description,
@@ -232,7 +251,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
             {!initialData && (
                 <button type="button" onClick={handleAddItem} className="btn-secondary w-full mt-4">+ Dodaj element</button>
             )}
-            <button type="submit" disabled={isSubmitting} className="btn-primary w-full mt-4">
+            <button type="submit" disabled={isSubmitting || !isFormValid()} className="btn-primary w-full mt-4">
                 {isSubmitting ? 'Zapisywanie...' : 'Zapisz Zestaw'}
             </button>
         </form>
