@@ -38,6 +38,7 @@ export interface LearningSetDto {
     description?: string;
     categoryId: string;
     type: string;
+    ownerName: string;
 }
 
 export interface CreateLearningSetDto {

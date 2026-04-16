@@ -24,6 +24,7 @@ const CategorySetsPage = () => {
                         <div className="set-card-header">
                             <h3>{set.title}</h3>
                             <div className="set-meta">
+                                <span className="set-author">Przez: {set.ownerName}</span>
                                 <span className={`set-type-badge ${set.type?.toLowerCase()}`}>
                                     {set.type}
                                 </span>

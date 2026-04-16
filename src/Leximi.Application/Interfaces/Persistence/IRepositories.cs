@@ -28,6 +28,7 @@ public interface ILearningSetRepository : IRepository<LearningSet>
 {
     Task<LearningSet?> GetWithItemsAsync(Guid id);
     Task<LearningSet?> GetWithItemsForUpdateAsync(Guid id);
+    Task<IEnumerable<LearningSet>> GetByCategoryAsync(Guid categoryId);
 }
 
 public interface IAnswerRepository : IRepository<Answer>

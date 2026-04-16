@@ -26,6 +26,7 @@ public class LearningSetRepository : Repository<LearningSet>, ILearningSetReposi
     public async Task<LearningSet?> GetWithItemsAsync(Guid id)
     {
         return await _dbSet
+            .Include(s => s.Owner)
             .Include(s => s.Items.Where(i => !i.IsDeleted))
                 .ThenInclude(i => i.Answers.Where(a => !a.IsDeleted))
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
@@ -37,9 +38,18 @@ public class LearningSetRepository : Repository<LearningSet>, ILearningSetReposi
         // This is the key: if soft-deleted entities are never loaded into the tracker,
         // there's nothing to detach, and EF's DetectChanges can't re-track them.
         return await _dbSet
+            .Include(s => s.Owner)
             .Include(s => s.Items.Where(i => !i.IsDeleted))
                 .ThenInclude(i => i.Answers.Where(a => !a.IsDeleted))
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+    }
+
+    public async Task<IEnumerable<LearningSet>> GetByCategoryAsync(Guid categoryId)
+    {
+        return await _dbSet
+            .Include(s => s.Owner)
+            .Where(s => s.CategoryId == categoryId && !s.IsDeleted)
+            .ToListAsync();
     }
 }
 

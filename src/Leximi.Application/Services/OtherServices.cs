@@ -53,14 +53,13 @@ public class LearningSetService : ILearningSetService
             !string.IsNullOrEmpty(i.FlashcardFront) ? new FlashcardDto(i.FlashcardFront, i.FlashcardBack ?? "") : null
         )).ToList();
 
-        return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), items);
+        return new LearningSetDetailsDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), items, set.Owner.Username);
     }
 
     public async Task<IEnumerable<LearningSetDto>> GetSetsByCategoryAsync(Guid categoryId)
     {
-        var sets = await _repository.GetAllAsync();
-        return sets.Where(s => s.CategoryId == categoryId)
-                   .Select(s => new LearningSetDto(s.Id, s.Title, s.Description, s.CategoryId, s.Type.ToString()));
+        var sets = await _repository.GetByCategoryAsync(categoryId);
+        return sets.Select(s => new LearningSetDto(s.Id, s.Title, s.Description, s.CategoryId, s.Type.ToString(), s.Owner.Username));
     }
 
     public async Task<LearningSetDto> CreateSetAsync(CreateLearningSetDto request, Guid userId)
@@ -85,7 +84,10 @@ public class LearningSetService : ILearningSetService
 
         await _repository.AddAsync(set);
         await _repository.SaveChangesAsync();
-        return new LearningSetDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString());
+        
+        // Reload to get owner info
+        var createdSet = await _repository.GetWithItemsAsync(set.Id);
+        return new LearningSetDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), createdSet?.Owner.Username ?? "Unknown");
     }
 
     public async Task<LearningSetDetailsDto> UpdateSetAsync(Guid id, UpdateLearningSetDto request, Guid userId)
