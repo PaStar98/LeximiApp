@@ -687,3 +687,106 @@ button:hover {
     color: #555;
     font-style: italic;
 }
+
+/* Profile Page Styles */
+.profile-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.user-info {
+    background: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    display: inline-block;
+    min-width: 300px;
+    text-align: left;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.user-info h2 {
+    margin-top: 0;
+    color: #646cff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-info p {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.history-section {
+    margin-top: 2rem;
+}
+
+.history-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    position: relative;
+    display: inline-block;
+}
+
+.history-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #646cff;
+    border-radius: 2px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2rem auto;
+    background: rgba(26, 26, 26, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.history-table th {
+    background-color: rgba(100, 108, 255, 0.1);
+    color: #646cff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    padding: 1.25rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid #333;
+}
+
+.history-table td {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #222;
+    color: #e0e0e0;
+}
+
+.history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.history-table td:last-child {
+    font-weight: 700;
+    color: #4ade80;
+}
