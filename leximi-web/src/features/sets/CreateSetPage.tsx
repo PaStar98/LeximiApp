@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 const CreateSetPage = () => {
     const navigate = useNavigate();
-    const [categoryId, setCategoryId] = useState('');
+    const [categoryName, setCategoryName] = useState('');
 
     const { data: categories } = useQuery({
         queryKey: ['categories'],
@@ -15,24 +15,39 @@ const CreateSetPage = () => {
     });
 
     const createSetMutation = useMutation({
-        mutationFn: async (data: UpdateLearningSetDto) => {
-            const createDto: CreateLearningSetDto = {
-                ...data,
-                categoryId: categoryId
-            };
-            return await learningSetService.create(createDto);
-        },
+        mutationFn: (data: CreateLearningSetDto) => learningSetService.create(data),
         onSuccess: (newSet) => {
             navigate(`/sets/${newSet.id}`);
         }
     });
 
-    const handleSubmit = (data: UpdateLearningSetDto) => {
-        if (!categoryId) {
-            alert('Wybierz kategorię!');
+    const handleSubmit = async (data: UpdateLearningSetDto) => {
+        if (!categoryName.trim()) {
+            alert('Wpisz nazwę kategorii!');
             return;
         }
-        createSetMutation.mutate(data);
+
+        try {
+            let finalCategoryId = '';
+            const existingCategory = categories?.find(
+                c => c.name.toLowerCase() === categoryName.trim().toLowerCase()
+            );
+
+            if (existingCategory) {
+                finalCategoryId = existingCategory.id;
+            } else {
+                const newCat = await categoryService.create({ name: categoryName.trim() });
+                finalCategoryId = newCat.id;
+            }
+
+            const createDto: CreateLearningSetDto = {
+                ...data,
+                categoryId: finalCategoryId
+            };
+            createSetMutation.mutate(createDto);
+        } catch (error) {
+            alert('Wystąpił błąd podczas przygotowywania kategorii.');
+        }
     };
 
     return (
@@ -40,18 +55,20 @@ const CreateSetPage = () => {
             <h1>Stwórz nowy zestaw</h1>
 
             <div className="form-group">
-                <label>Kategoria</label>
-                <select
-                    value={categoryId}
-                    onChange={e => setCategoryId(e.target.value)}
+                <label htmlFor="category-input">Kategoria</label>
+                <input
+                    id="category-input"
+                    value={categoryName}
+                    onChange={e => setCategoryName(e.target.value)}
                     className="input-field"
+                    placeholder="Wpisz nazwę kategorii (np. Historia, Angielski...)"
                     required
-                >
-                    <option value="">-- Wybierz kategorię --</option>
+                />
+                <datalist id="category-options">
                     {categories?.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        <option key={cat.id} value={cat.name} />
                     ))}
-                </select>
+                </datalist>
             </div>
 
             <SetEditor
