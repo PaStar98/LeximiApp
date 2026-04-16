@@ -42,7 +42,7 @@ const ProfilePage = () => {
                                     <td>{attempt.setType}</td>
                                     <td>{new Date(attempt.startedAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</td>
                                     <td>{attempt.finishedAt ? new Date(attempt.finishedAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'W trakcie'}</td>
-                                    <td>{attempt.setType === 'Flashcards' ? '-' : attempt.score}</td>
+                                    <td>{attempt.setType === 'Flashcards' ? '-' : `${attempt.score} / ${attempt.maxScore}`}</td>
                                 </tr>
                             ))}
                         </tbody>

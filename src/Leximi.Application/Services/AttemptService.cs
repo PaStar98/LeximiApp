@@ -149,6 +149,8 @@ public class AttemptService : IAttemptService
         var attempts = await _attemptRepository.GetByUserIdAsync(userId);
         return attempts.Select(a => {
             string typeStr = a.LearningSet.Type.ToString();
+            int maxScore = a.LearningSet.Items.Count(i => !i.IsDeleted);
+            
             return new AttemptHistoryDto(
                 a.Id, 
                 a.LearningSetId, 
@@ -156,7 +158,8 @@ public class AttemptService : IAttemptService
                 typeStr, 
                 a.StartedAt, 
                 a.FinishedAt, 
-                a.Score);
+                a.Score,
+                maxScore);
         });
     }
 }

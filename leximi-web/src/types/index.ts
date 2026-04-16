@@ -113,6 +113,7 @@ export interface AttemptHistoryDto {
     startedAt: string;
     finishedAt: string | null;
     score: number;
+    maxScore: number;
 }
 // Note: AttemptDto in backend didn't have Title. GetUserHistoryAsync returns AttemptDto.
 // If we want Title in history, we need to update backend AttemptDto or fetch separately.

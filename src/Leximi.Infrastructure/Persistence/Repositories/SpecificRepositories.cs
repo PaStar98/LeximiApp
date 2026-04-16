@@ -56,6 +56,7 @@ public class AttemptRepository : Repository<LearningSetAttempt>, IAttemptReposit
     {
         return await _dbSet
             .Include(a => a.LearningSet)
+                .ThenInclude(s => s.Items.Where(i => !i.IsDeleted))
             .Where(a => a.UserId == userId && !a.IsDeleted)
             .OrderByDescending(a => a.StartedAt)
             .ToListAsync();
