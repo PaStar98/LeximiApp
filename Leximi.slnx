@@ -6,7 +6,6 @@
     <Project Path="src/Leximi.Infrastructure/Leximi.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Leximi.Application.UnitTests/Leximi.Application.UnitTests.csproj" />
-    <Project Path="tests/Leximi.Domain.UnitTests/Leximi.Domain.UnitTests.csproj" />
+    <Project Path="tests/Leximi.Tests/Leximi.Tests.csproj" />
   </Folder>
 </Solution>
