@@ -12,34 +12,28 @@ const LearningPage = () => {
     const [feedback, setFeedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
 
-    // 1. Fetch Attempt
     const { data: attempt, isLoading: isAttemptLoading } = useQuery({
         queryKey: ['attempt', attemptId],
         queryFn: () => attemptService.getById(attemptId!),
         enabled: !!attemptId,
     });
 
-    // 2. Fetch Set (dependent on attempt)
     const { data: set, isLoading: isSetLoading } = useQuery({
         queryKey: ['set', attempt?.setId],
         queryFn: () => learningSetService.getById(attempt!.setId),
         enabled: !!attempt?.setId,
     });
 
-    // Mutations
     const submitAnswerMutation = useMutation({
         mutationFn: ({ attemptId, data }: { attemptId: string; data: SubmitAnswerDto }) =>
             attemptService.submitAnswer(attemptId, data),
-        onSuccess: () => {
-            // Answer recorded.
-            // We could update score locally or just trust the backend on finish.
-        }
+        onSuccess: () => { }
     });
 
     const finishAttemptMutation = useMutation({
         mutationFn: attemptService.finish,
         onSuccess: () => {
-            navigate('/profile'); // Or a summary partial view
+            navigate('/profile');
         }
     });
 
@@ -60,7 +54,7 @@ const LearningPage = () => {
     const isLastItem = currentIndex === set.items.length - 1;
 
     const handleAnswerSelect = (answerId: string) => {
-        if (feedback) return; // Prevent changing after submission
+        if (feedback) return;
         setSelectedAnswerId(answerId);
     };
 

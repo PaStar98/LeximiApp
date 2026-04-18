@@ -40,7 +40,6 @@ const SetDetailsPage = () => {
         <div className="set-details-container">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-3xl font-bold">{set.title}</h1>
-                {/* TODO: Check ownership */}
                 <button onClick={handleEdit} className="btn-secondary">Edytuj</button>
             </div>
             <p className="description mb-4">{set.description}</p>

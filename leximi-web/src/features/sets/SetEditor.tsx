@@ -18,17 +18,7 @@ interface SetEditorProps {
 const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
     const [title, setTitle] = useState(initialData?.title || '');
     const [description, setDescription] = useState(initialData?.description || '');
-    const [categoryId, setCategoryId] = useState(initialData?.categoryId || ''); // Note: We need categoryId in DTOs if we want to change it, but UpdateDTO doesn't have it currently. Assuming we can't change category for now or relying on initial create. 
-    // Wait, UpdateLearningSetDto (backend) doesn't have CategoryId. create does. 
-    // Let's assume for Edit we don't change category, but for Create we need it. 
-    // Actually, SetEditor might be used for Create too. 
-    // If it's create, we need to pass categoryId back separately or handle it in parent.
-    // Let's stick to the props interface. The parent handles the API call structure. 
-    // But `UpdateLearningSetDto` is what we pass back. It has title, description, type, items.
-
-    // For `CreateSet`, we usually pick a category first or in the form. 
-    // Simplification: `SetEditor` returns `UpdateLearningSetDto`. Parent adds `categoryId` if creating.
-
+    const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
     const [type, setType] = useState('Flashcards');
     const [items, setItems] = useState<UpdateLearningItemDto[]>([]);
 
@@ -40,7 +30,6 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
             setType(initialData.type || 'Flashcards');
 
             const normalizedItems = initialData.items.map(i => {
-                // Handle potential PascalCase from API if it happens
                 const question = i.question;
                 const flashcard = i.flashcard;
 
@@ -97,7 +86,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
     const handleAddAnswer = (itemIndex: number) => {
         const newItems = [...items];
         const answers = newItems[itemIndex].answers || [];
-        answers.push({ content: '', isCorrect: false }); // No ID for new answers
+        answers.push({ content: '', isCorrect: false });
         newItems[itemIndex].answers = answers;
         setItems(newItems);
     };
@@ -173,7 +162,7 @@ const SetEditor = ({ initialData, onSubmit, isSubmitting }: SetEditorProps) => {
                         value={type}
                         onChange={e => {
                             setType(e.target.value);
-                            setItems([]); // Clear items on type change for simplicity
+                            setItems([]);
                         }}
                         className="input-field"
                     >
