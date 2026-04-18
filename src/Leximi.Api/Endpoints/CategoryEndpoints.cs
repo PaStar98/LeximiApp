@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Leximi.Application.Interfaces.Services;
 using Leximi.Application.DTOs;
 
@@ -22,6 +19,6 @@ public static class CategoryEndpoints
         {
             var category = await service.CreateCategoryAsync(request);
             return Results.Ok(category);
-        }).RequireAuthorization(); // Add admin check later
+        }).RequireAuthorization();
     }
 }

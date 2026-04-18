@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
 
@@ -69,7 +70,7 @@ public class ExceptionHandlingMiddleware
             KeyNotFoundException => HttpStatusCode.NotFound,
             UnauthorizedAccessException => HttpStatusCode.Forbidden,
             ArgumentException => HttpStatusCode.BadRequest,
-            Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException => HttpStatusCode.Conflict,
+            DbUpdateConcurrencyException => HttpStatusCode.Conflict,
             _ => HttpStatusCode.InternalServerError
         };
 
