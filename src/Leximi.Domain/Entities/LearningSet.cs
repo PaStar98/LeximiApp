@@ -18,24 +18,4 @@ public class LearningSet : BaseEntity
     public virtual ICollection<LearningItem> Items { get; set; } = new List<LearningItem>();
 }
 
-public class LearningItem : BaseEntity
-{
-    public Guid LearningSetId { get; set; }
-    public virtual LearningSet LearningSet { get; set; } = null!;
-    
-    public string? QuestionContent { get; set; }
-    public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
-
-    public string? FlashcardFront { get; set; }
-    public string? FlashcardBack { get; set; }
-}
-
-public class Answer : BaseEntity
-{
-    public Guid LearningItemId { get; set; }
-    public virtual LearningItem LearningItem { get; set; } = null!;
-    
-    public required string Content { get; set; }
-    public bool IsCorrect { get; set; }
-}
 

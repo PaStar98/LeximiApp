@@ -9,7 +9,6 @@ public class User : BaseEntity
     public required string Username { get; set; }
     public string? FullName { get; set; }
     
-    // Navigation
     public virtual ICollection<LearningSet> OwnedSets { get; set; } = new List<LearningSet>();
     public virtual ICollection<LearningSetAttempt> Attempts { get; set; } = new List<LearningSetAttempt>();
 }
