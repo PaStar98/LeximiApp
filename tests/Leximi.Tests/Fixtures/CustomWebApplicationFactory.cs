@@ -29,7 +29,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.Replace(ServiceDescriptor.Scoped(_ => LearningSetServiceMock.Object));
             services.Replace(ServiceDescriptor.Scoped(_ => AttemptServiceMock.Object));
 
-            // Setup Test Auth
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = "TestScheme";

@@ -21,7 +21,6 @@ public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task Register_ShouldReturnOk_WhenSuccessful()
     {
-        // Arrange
         var request = new RegisterRequestDto("test@example.com", "TestUser", "Password123!");
         var responseDto = new AuthResponseDto("token", "TestUser", "test@example.com");
         
@@ -29,10 +28,8 @@ public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>
             .Setup(s => s.RegisterAsync(It.IsAny<RegisterRequestDto>()))
             .ReturnsAsync(responseDto);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/auth/register", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
         result.Should().BeEquivalentTo(responseDto);
@@ -41,7 +38,6 @@ public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task Login_ShouldReturnOk_WhenSuccessful()
     {
-        // Arrange
         var request = new LoginRequestDto("test@example.com", "Password123!");
         var responseDto = new AuthResponseDto("token", "TestUser", "test@example.com");
 
@@ -49,10 +45,8 @@ public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>
             .Setup(s => s.LoginAsync(It.IsAny<LoginRequestDto>()))
             .ReturnsAsync(responseDto);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/auth/login", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
         result.Should().BeEquivalentTo(responseDto);
@@ -61,17 +55,14 @@ public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task GetMe_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         var userDto = new UserDto(Guid.NewGuid(), "test@example.com", "TestUser");
 
         _factory.IdentityServiceMock
             .Setup(s => s.GetCurrentUserAsync(It.IsAny<Guid>()))
             .ReturnsAsync(userDto);
 
-        // Act
         var response = await _client.GetAsync("/api/auth/me");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<UserDto>();
         result.Should().BeEquivalentTo(userDto);

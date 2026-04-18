@@ -21,7 +21,6 @@ public class CategoryEndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task GetAllCategories_ShouldReturnOk()
     {
-        // Arrange
         var categories = new List<CategoryDto>
         {
             new CategoryDto(Guid.NewGuid(), "Category 1", "Description 1"),
@@ -32,10 +31,8 @@ public class CategoryEndpointsTests : IClassFixture<CustomWebApplicationFactory>
             .Setup(s => s.GetAllCategoriesAsync())
             .ReturnsAsync(categories);
 
-        // Act
         var response = await _client.GetAsync("/api/categories");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
         result.Should().HaveCount(2);
@@ -45,7 +42,6 @@ public class CategoryEndpointsTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task CreateCategory_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         var request = new CreateCategoryDto("New Category", "New Description");
         var categoryDto = new CategoryDto(Guid.NewGuid(), "New Category", "New Description");
 
@@ -53,10 +49,8 @@ public class CategoryEndpointsTests : IClassFixture<CustomWebApplicationFactory>
             .Setup(s => s.CreateCategoryAsync(It.IsAny<CreateCategoryDto>()))
             .ReturnsAsync(categoryDto);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/categories", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<CategoryDto>();
         result.Should().BeEquivalentTo(categoryDto);

@@ -21,7 +21,6 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task GetSetById_ShouldReturnOk()
     {
-        // Arrange
         var setId = Guid.NewGuid();
         var detailsDto = new LearningSetDetailsDto(
             setId, 
@@ -36,10 +35,8 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
             .Setup(s => s.GetSetByIdAsync(setId))
             .ReturnsAsync(detailsDto);
 
-        // Act
         var response = await _client.GetAsync($"/api/sets/{setId}");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<LearningSetDetailsDto>();
         result.Should().BeEquivalentTo(detailsDto);
@@ -48,7 +45,6 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task GetSetsByCategory_ShouldReturnOk()
     {
-        // Arrange
         var categoryId = Guid.NewGuid();
         var sets = new List<LearningSetDto>
         {
@@ -59,10 +55,8 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
             .Setup(s => s.GetSetsByCategoryAsync(categoryId))
             .ReturnsAsync(sets);
 
-        // Act
         var response = await _client.GetAsync($"/api/sets/category/{categoryId}");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<List<LearningSetDto>>();
         result.Should().BeEquivalentTo(sets);
@@ -71,7 +65,6 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task CreateSet_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         var request = new CreateLearningSetDto("New Set", "New Description", Guid.NewGuid(), "Flashcards", new List<UpdateLearningItemDto>());
         var responseDto = new LearningSetDto(Guid.NewGuid(), "New Set", "New Description", request.CategoryId, "Flashcards", "Author 1");
 
@@ -79,10 +72,8 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
             .Setup(s => s.CreateSetAsync(It.IsAny<CreateLearningSetDto>(), It.IsAny<Guid>()))
             .ReturnsAsync(responseDto);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/sets", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<LearningSetDto>();
         result.Should().BeEquivalentTo(responseDto);
@@ -91,7 +82,6 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task UpdateSet_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         var setId = Guid.NewGuid();
         var request = new UpdateLearningSetDto("Updated Set", "Updated Description", "Flashcards", Guid.NewGuid(), new List<UpdateLearningItemDto>());
         var detailsDto = new LearningSetDetailsDto(
@@ -107,10 +97,8 @@ public class LearningSetEndpointsTests : IClassFixture<CustomWebApplicationFacto
             .Setup(s => s.UpdateSetAsync(setId, It.IsAny<UpdateLearningSetDto>(), It.IsAny<Guid>()))
             .ReturnsAsync(detailsDto);
 
-        // Act
         var response = await _client.PutAsJsonAsync($"/api/sets/{setId}", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<LearningSetDetailsDto>();
         result.Should().BeEquivalentTo(detailsDto);
