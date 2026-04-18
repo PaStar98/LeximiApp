@@ -2,51 +2,21 @@ using Leximi.Application.DTOs;
 using Leximi.Application.Interfaces.Persistence;
 using Leximi.Application.Interfaces.Services;
 using Leximi.Domain.Entities;
+using Leximi.Domain.Enums;
 
 namespace Leximi.Application.Services;
 
-public class CategoryService : ICategoryService
+public class LearningSetService(ILearningSetRepository repository) : ILearningSetService
 {
-    private readonly ICategoryRepository _repository;
-
-    public CategoryService(ICategoryRepository repository)
-    {
-        _repository = repository;
-    }
-
-    public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
-    {
-        var categories = await _repository.GetAllAsync();
-        return categories.Select(c => new CategoryDto(c.Id, c.Name, c.Description));
-    }
-
-    public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto request)
-    {
-        var category = new Category { Name = request.Name, Description = request.Description };
-        await _repository.AddAsync(category);
-        await _repository.SaveChangesAsync();
-        return new CategoryDto(category.Id, category.Name, category.Description);
-    }
-}
-
-public class LearningSetService : ILearningSetService
-{
-    private readonly ILearningSetRepository _repository;
-
-    public LearningSetService(ILearningSetRepository repository)
-    {
-        _repository = repository;
-    }
-
     public async Task<LearningSetDetailsDto> GetSetByIdAsync(Guid id)
     {
-        var set = await _repository.GetWithItemsAsync(id);
+        var set = await repository.GetWithItemsAsync(id);
         if (set == null) throw new Exception("Set not found");
 
         var items = set.Items.Select(i => new LearningItemDto(
             i.Id,
             !string.IsNullOrEmpty(i.QuestionContent) ? new QuestionDto(
-                Guid.Empty, // QuestionId is gone
+                Guid.Empty,
                 i.QuestionContent, 
                 i.Answers.Select(a => new AnswerDto(a.Id, a.Content, a.IsCorrect)).ToList()
             ) : null,
@@ -58,13 +28,13 @@ public class LearningSetService : ILearningSetService
 
     public async Task<IEnumerable<LearningSetDto>> GetSetsByCategoryAsync(Guid categoryId)
     {
-        var sets = await _repository.GetByCategoryAsync(categoryId);
+        var sets = await repository.GetByCategoryAsync(categoryId);
         return sets.Select(s => new LearningSetDto(s.Id, s.Title, s.Description, s.CategoryId, s.Type.ToString(), s.Owner.Username));
     }
 
     public async Task<LearningSetDto> CreateSetAsync(CreateLearningSetDto request, Guid userId)
     {
-        if (!Enum.TryParse<Leximi.Domain.Enums.SetType>(request.Type, true, out var type))
+        if (!Enum.TryParse<SetType>(request.Type, true, out var type))
             throw new ArgumentException($"Invalid set type: {request.Type}");
 
         var set = new LearningSet
@@ -82,11 +52,10 @@ public class LearningSetService : ILearningSetService
             SyncItems(set, request.Items);
         }
 
-        await _repository.AddAsync(set);
-        await _repository.SaveChangesAsync();
+        await repository.AddAsync(set);
+        await repository.SaveChangesAsync();
         
-        // Reload to get owner info
-        var createdSet = await _repository.GetWithItemsAsync(set.Id);
+        var createdSet = await repository.GetWithItemsAsync(set.Id);
         return new LearningSetDto(set.Id, set.Title, set.Description, set.CategoryId, set.Type.ToString(), createdSet?.Owner.Username ?? "Unknown");
     }
 
@@ -99,7 +68,7 @@ public class LearningSetService : ILearningSetService
         {
             try
             {
-                var set = await _repository.GetWithItemsForUpdateAsync(id);
+                var set = await repository.GetWithItemsForUpdateAsync(id);
                 if (set == null) throw new KeyNotFoundException("Set not found");
                 if (set.OwnerId != userId) throw new UnauthorizedAccessException("You are not the owner of this set");
 
@@ -107,19 +76,19 @@ public class LearningSetService : ILearningSetService
                 set.Description = request.Description;
                 set.CategoryId = request.CategoryId;
 
-                if (Enum.TryParse<Leximi.Domain.Enums.SetType>(request.Type, true, out var newType))
+                if (Enum.TryParse<SetType>(request.Type, true, out var newType))
                 {
                     set.Type = newType;
                 }
                 
                 SyncItems(set, request.Items);
 
-                await _repository.SaveChangesAsync();
+                await repository.SaveChangesAsync();
                 break;
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException) when (currentRetry < maxRetries)
             {
-                _repository.ClearTracker();
+                repository.ClearTracker();
                 currentRetry++;
                 await Task.Delay(100 * currentRetry);
             }
@@ -131,7 +100,7 @@ public class LearningSetService : ILearningSetService
     private void SyncItems(LearningSet set, List<UpdateLearningItemDto> requestItems)
     {
         requestItems ??= new List<UpdateLearningItemDto>();
-        bool isQuestionBased = set.Type != Leximi.Domain.Enums.SetType.Flashcards;
+        bool isQuestionBased = set.Type != SetType.Flashcards;
         
         var itemsToRemove = set.Items
             .Where(i => !i.IsDeleted)
@@ -194,13 +163,11 @@ public class LearningSetService : ILearningSetService
                     existingItem.FlashcardFront = itemDto.FlashcardFront;
                     existingItem.FlashcardBack = itemDto.FlashcardBack;
                     existingItem.QuestionContent = null;
-                    // Flashcards don't use Answers, mark all as deleted if any
                     foreach(var a in existingItem.Answers) a.IsDeleted = true;
                 }
             }
             else
             {
-                // Only add if there's actual content
                 bool hasContent = isQuestionBased 
                     ? !string.IsNullOrWhiteSpace(itemDto.QuestionContent) 
                     : !string.IsNullOrWhiteSpace(itemDto.FlashcardFront);
@@ -233,5 +200,4 @@ public class LearningSetService : ILearningSetService
             }
         }
     }
-
 }
