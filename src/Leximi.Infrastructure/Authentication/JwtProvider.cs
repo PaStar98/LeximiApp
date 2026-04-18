@@ -8,15 +8,8 @@ using Leximi.Application.Interfaces.Authentication;
 
 namespace Leximi.Infrastructure.Authentication;
 
-public class JwtProvider : IJwtProvider
+public class JwtProvider(IConfiguration configuration) : IJwtProvider
 {
-    private readonly IConfiguration _configuration;
-
-    public JwtProvider(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     public string GenerateToken(User user)
     {
         var claims = new[]
@@ -26,13 +19,13 @@ public class JwtProvider : IJwtProvider
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username)
         };
 
-        var secret = _configuration["Jwt:Secret"] ?? "a_very_long_and_secure_secret_key_for_development";
+        var secret = configuration["Jwt:Secret"] ?? "a_very_long_and_secure_secret_key_for_development";
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: configuration["Jwt:Issuer"],
+            audience: configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.Now.AddDays(7),
             signingCredentials: creds

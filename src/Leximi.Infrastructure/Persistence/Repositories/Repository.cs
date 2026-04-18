@@ -4,16 +4,10 @@ using Leximi.Domain.Common;
 
 namespace Leximi.Infrastructure.Persistence.Repositories;
 
-public class Repository<T> : IRepository<T> where T : BaseEntity
+public class Repository<T>(LeximiDbContext context) : IRepository<T> where T : BaseEntity
 {
-    protected readonly LeximiDbContext _context;
-    protected readonly DbSet<T> _dbSet;
-
-    public Repository(LeximiDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
+    protected readonly LeximiDbContext _context = context;
+    protected readonly DbSet<T> _dbSet = context.Set<T>();
 
     public async Task<T?> GetByIdAsync(Guid id) => await _dbSet.FindAsync(id);
 

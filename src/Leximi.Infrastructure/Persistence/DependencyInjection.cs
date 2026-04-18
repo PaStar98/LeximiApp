@@ -12,7 +12,7 @@ public static class DependencyInjection
         services.AddDbContext<LeximiDbContext>(options =>
         {
             options.UseSqlServer(connectionString);
-            options.EnableSensitiveDataLogging(); // Helps diagnose concurrency issues
+            options.EnableSensitiveDataLogging();
         });
 
         services.AddScoped<IUserRepository, UserRepository>();

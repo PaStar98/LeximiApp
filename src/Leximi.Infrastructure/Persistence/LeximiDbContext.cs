@@ -4,10 +4,8 @@ using Leximi.Domain.Common;
 
 namespace Leximi.Infrastructure.Persistence;
 
-public class LeximiDbContext : DbContext
+public class LeximiDbContext(DbContextOptions<LeximiDbContext> options) : DbContext(options)
 {
-    public LeximiDbContext(DbContextOptions<LeximiDbContext> options) : base(options) { }
-
     public DbSet<User> Users => Set<User>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<LearningSet> LearningSets => Set<LearningSet>();
@@ -22,7 +20,6 @@ public class LeximiDbContext : DbContext
         
 
         
-        // Apply configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LeximiDbContext).Assembly);
 
         // Disable cascade delete globally to prevent cycles in SQL Server
@@ -31,7 +28,6 @@ public class LeximiDbContext : DbContext
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
 
-        // Specifically enable Cascade for items and answers to support soft-delete via collection removal
         modelBuilder.Entity<LearningSet>()
             .HasMany(s => s.Items)
             .WithOne(i => i.LearningSet)
@@ -43,8 +39,6 @@ public class LeximiDbContext : DbContext
             .WithOne(a => a.LearningItem)
             .HasForeignKey(a => a.LearningItemId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        // Global Query Filters removed to prevent DbUpdateConcurrencyException on soft-delete undeletes
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
